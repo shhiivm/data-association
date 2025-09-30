@@ -72,6 +72,26 @@ app.get("/profile", isLoggedIn, async (req, res) => {
   res.render("profile", { user });
 });
 
+app.post("/post", isLoggedIn, async (req, res) => {
+  try {
+    let user = await userModel.findOne({ email: req.user.email });
+
+    let { content } = req.body;
+    let post = await postModel.create({
+      user: user._id,
+      content,
+    });
+
+    user.posts.push(post._id);
+    await user.save();
+
+    res.redirect("/profile");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server Error");
+  }
+});
+
 function isLoggedIn(req, res, next) {
   if (req.cookies.token === "") res.redirect("/login");
   else {
