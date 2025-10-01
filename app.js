@@ -74,6 +74,21 @@ app.get("/profile", isLoggedIn, async (req, res) => {
   res.render("profile", { user });
 });
 
+app.get("/like/:id", isLoggedIn, async (req, res) => {
+  let post = await postModel.findOne({ _id: req.params.id }).populate("user");
+
+  const userId = req.user.userid.toString();
+
+  if (post.likes.includes(userId)) {
+    post.likes = post.likes.filter((id) => id.toString() !== userId);
+  } else {
+    post.likes.push(userId);
+  }
+
+  await post.save();
+  res.redirect("/profile");
+});
+
 app.post("/post", isLoggedIn, async (req, res) => {
   try {
     let user = await userModel.findOne({ email: req.user.email });
